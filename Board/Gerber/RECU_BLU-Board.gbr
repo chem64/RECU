@@ -1,0 +1,21 @@
+G04 DipTrace 3.3.1.1*
+G04 RECU_BLU-Board.gbr*
+%MOIN*%
+G04 #@! TF.FileFunction,Drawing,Board polygon*
+G04 #@! TF.Part,Single*
+%FSLAX26Y26*%
+G04*
+G70*
+G90*
+G75*
+G01*
+G04 BoardPoly*
+%LPD*%
+G36*
+X394000Y394000D2*
+X1699000D1*
+Y1519000D1*
+X394000D1*
+Y394000D1*
+G37*
+M02*
