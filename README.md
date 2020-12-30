@@ -1,12 +1,7 @@
-# RECU
-Renix ECU Reader
+# RECU    
+### Renix ECU Reader
 
-**Bold text** is **bold** and [inline links](https://krausefx.com) work as well.
-
-# Header 1
-## Header 2
-### Header 3
-#### Header 4
+The **RECU** Android app is developed with [B4A](https://www.b4x.com/b4a.html) by Anywhere Software.  The ESP32 microcontroller attached to the **RECU** control board is programmed with [B4R](https://www.b4x.com/b4r.html) by Anywhere Software.
 
 ## RECU control board
 
