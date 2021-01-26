@@ -6,7 +6,7 @@ The **RECU** Android app is developed with [B4A](https://www.b4x.com/b4a.html) b
 ## RECU control board
 The circuit to gather information from the ECU is based on a design by J. Eberle of TractorEnvy.com.  Board was designed using freeware version of Diptrace.  
 
-<img src="readme/RECU_1.png" alt="RECU_1.png" width="100px" height="200px"> <img src="readme/RECU_2.png" alt="RECU_1.png" width="200px" height="100px">
+<img src="readme/RECU_1.png" alt="Board.png" width="100px" height="200px"> <img src="readme/Board_Assembly.png" alt="RECU_1.png" width="200px" height="100px">
 
 ## Screenshot of RECU running on Android phone
 The ECU packet structure is based on the work of Nick Risley of NickInTimeDesign.com.  Find [RECU](https://play.google.com/store/apps/details?id=cmarsoft.recu) on Google Play.
