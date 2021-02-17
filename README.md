@@ -18,13 +18,13 @@ The circuit to gather information from the ECU is a modified version of a design
 * 1: Four position PCB mount screw terminals
 * 1: ESP-32S Dual Development Board
 * 1: 1N5817 Schottky Rectifier Diode
-* 1: 150 Ohm Resistor
-* 1: 2200 Ohm Resistor
-* 1: 4700 Ohm Resistor
+* 1: 150 Ohm .25w Resistor
+* 1: 2200 Ohm .25w Resistor
+* 1: 4700 Ohm .25w Resistor
 * 1: 3300 Ohm .25w Resistor
 * 1: 1000 Ohm .25w Resistor
 * 1: 2N3904 Transistor
-* 1: Four 20AWG conductor cable, 6-8 ft
+* 1: 20AWG four conductor cable, 6-8 ft
 * 1: Printed Connector cover (optional)
 
 ## Screenshot of RECU running on Android phone
