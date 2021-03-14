@@ -30,4 +30,8 @@ The circuit to gather information from the ECU is a modified version of a design
 ## Screenshots of RECU running on Android phone
 Find [RECU](https://play.google.com/store/apps/details?id=cmarsoft.recu) on Google Play.
 
-<img src="readme/Screenshot_Main.png" alt="Main.png" width="200px" height="400px"> <img src="readme/Screenshot_Setup.png" alt="Setup.png" width="200px" height="400px"> <img src="readme/Screenshot_RECU_Chart1.png" alt="RECU_Chart1.png" width="200px" height="400px"> <img src="readme/RECU Drive Log.png" alt="RECU Drive Log.png" width="800px" height="400px">
+Main Screen, Settings Screen, Chart Screen
+<img src="readme/Screenshot_Main.png" alt="Main.png" width="200px" height="400px"> <img src="readme/Screenshot_Setup.png" alt="Setup.png" width="200px" height="400px"> 
+
+Drive Log
+<img src="readme/Screenshot_RECU_Chart1.png" alt="RECU_Chart1.png" width="200px" height="400px"> <img src="readme/RECU Drive Log.png" alt="RECU Drive Log.png" width="800px" height="400px">
