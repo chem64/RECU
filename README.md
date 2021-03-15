@@ -1,7 +1,6 @@
 # RECU    
 ### Renix ECU Reader
-
-The ESP32 microcontroller attached to the **RECU** control board is programmed with [Arduino](https://www.arduino.cc). The [RECU](https://play.google.com/store/apps/details?id=cmarsoft.recu) Android app connects via bluetooth to the ESP32 that is connected to the Jeep diagnostic port via serial link. Mine has been connected full time for several months with no problems.
+The RECU Reader will display values read from Jeep vehicles with Renix EFI fuel injection.  It has been tested on a 1989 Jeep Wrangler with 2.5L engine and manual transmission.  The ESP32 microcontroller attached to the **RECU** control board is programmed with [Arduino](https://www.arduino.cc). The [RECU](https://play.google.com/store/apps/details?id=cmarsoft.recu) Android app connects via bluetooth to the ESP32 that is connected to the Jeep diagnostic port via serial link. Mine has been connected full time for several months.
 
 ## RECU control board
 The circuit to gather information from the ECU is a modified version of a design by John Eberle of TractorEnvy.com.  Board was designed using freeware version of Diptrace and made by [OshPark](https://oshpark.com/shared_projects/BllhAg80).  The ECU packet structure and parts of the arduino code are based on the work of Nick Risley of NickInTimeDesign.com.
