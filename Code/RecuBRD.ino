@@ -26,27 +26,28 @@ uint8_t ver = 105;
  *         1.04  - there is a bug in frame handling introduced in 1.02 - reverted to previous frame handler from 1.01 (with new buffer size)
  *               - removed LED toggle in frame handler - now LED is only for connections 
  *               - framebuffer(31) is for bad frame count
- *         1.05  - added 3 sec watchdog
- *               - reduced loop delay to 30 msec
+ *         1.05  - now using BLE notify in addition to BLE read, so either method can be used       
+ *         
  */
 #include <BLEDevice.h>
 #include <BLEUtils.h>
 #include <BLEServer.h>
 #include <BLE2902.h>
-#include <esp_task_wdt.h>
-
-//3 seconds WDT
-#define WDT_TIMEOUT 3
 
 BLEServer *pServer;
 BLEService *pService;
 BLECharacteristic *pCharacteristic;
+BLECharacteristic *pChar1;
+BLECharacteristic *pChar2;
 BLEAdvertising *pAdvertising;
 #define SERVICE_UUID        "13a63cfd-fde2-42aa-8d59-6658a5031063"  
-#define CHARACTERISTIC_UUID "e922f584-83a4-4317-a384-41248aeaf139"  
+#define CHARACTERISTIC_UUID "e922f584-83a4-4317-a384-41248aeaf139"  //40 bytes for reads
+#define CHAR1_UUID "1922f584-83a4-4317-a384-41248aeaf139"           //0-19 bytes for notify
+#define CHAR2_UUID "2922f584-83a4-4317-a384-41248aeaf139"           //20-34 bytes for notify
 
 uint8_t FRAME_SIZE = 28;          //ECU Frame size constant
 byte frameBuffer[35];
+byte char2Buffer[20];
 uint16_t bufferPosition = 0;     //Current reception byte position
 bool frameCompleteFlag = false;  //Set when a frame is ready
 bool _0xFFReceived = false;       //Set when a 0xFF received
@@ -76,6 +77,39 @@ class MyServerCallbacks: public BLEServerCallbacks
     }
 };
 
+void SetLed(bool onState)
+{
+  digitalWrite(2, onState);    // If HIGH, then turn LED on.
+}
+
+void NotifyData()
+{
+  if (deviceConnected) 
+  {
+    pCharacteristic->setValue(frameBuffer,35);
+    pChar1->setValue(frameBuffer,20);
+    pChar1->notify();
+    delay(10);
+    char2Buffer[0] = frameBuffer[20];
+    char2Buffer[1] = frameBuffer[21];
+    char2Buffer[2] = frameBuffer[22];
+    char2Buffer[3] = frameBuffer[23];
+    char2Buffer[4] = frameBuffer[24];
+    char2Buffer[5] = frameBuffer[25];
+    char2Buffer[6] = frameBuffer[26];
+    char2Buffer[7] = frameBuffer[27];
+    char2Buffer[8] = frameBuffer[28];
+    char2Buffer[9] = frameBuffer[29];
+    char2Buffer[10] = frameBuffer[30];
+    char2Buffer[11] = frameBuffer[31];
+    char2Buffer[12] = frameBuffer[32];
+    char2Buffer[13] = frameBuffer[33];
+    char2Buffer[14] = frameBuffer[34];
+    pChar2->setValue(char2Buffer,15);
+    pChar2->notify();
+  }
+}
+
 void ManageSerialReceive()
 {
   uint8_t byte_read;
@@ -92,43 +126,17 @@ void ManageSerialReceive()
           FrameCount++;
           if(FrameCount > 127) FrameCount = 0;
           frameBuffer[33] = FrameCount;
-          if (deviceConnected) 
-          {
-            pCharacteristic->setValue(frameBuffer,35);
-          }
+          NotifyData();
         }
         else
         {
           ++badFrames;
           if(badFrames > 127) badFrames = 0;
           frameBuffer[31] = badFrames;
-          if (deviceConnected) 
-          {
-            pCharacteristic->setValue(frameBuffer,35);
-          }
+          NotifyData();
         }
         frameCompleteFlag = false;   //Reset Flag to start new receive
      }
-  }
-}
-
-void SetLed(bool onState)
-{
-  digitalWrite(2, onState);    // If HIGH, then turn LED on.
-}
-
-void ToggleLed()
-{
-  static uint8_t state = 0;
-  if(state == 0)
-  {
-    digitalWrite(2, HIGH);   // turn the BLUE LED on (HIGH is the voltage level)
-    state = 1;
-  }
-  else
-  {
-    digitalWrite(2, LOW);   // turn the BLUE LED on (HIGH is the voltage level)
-    state = 0;
   }
 }
 
@@ -139,18 +147,18 @@ bool ReceiveDataFrame(uint8_t data)
     if (frameCompleteFlag)      //Unread frame waiting - ignore data
         return false;
     byteData = data;
-    if(!bufferFilling)           //Waiting on 0xFF, 0x00 sequence to start
+    if(!bufferFilling)          //Waiting on 0xFF, 0x00 sequence to start
     {  
         if((byteData == 0x00) && (lastByte == 0xFF))   //if current byte is 0x00 and last was 0xFF then start frame
         {
             bufferFilling = true;   //Indicate filling in progress
             bufferPosition = 0;     //Reset frame fill position
-            bufferError = 0;       //reset error
-            lastByte = 0;          //reset for next frame start
+            bufferError = 0;        //reset error
+            lastByte = 0;           //reset for next frame start
             _0xFFReceived = false;  //Reset double 0xFF data indicator
         }
         else
-            lastByte = byteData;   //Not start of frame, so keep byte for next check
+            lastByte = byteData;    //Not start of frame, so keep byte for next check
     }
     else
     {   //Start of Frame received so Receiving Data
@@ -209,14 +217,19 @@ void setup()
   pServer = BLEDevice::createServer();
   pServer->setCallbacks(new MyServerCallbacks());
   pService = pServer->createService(SERVICE_UUID);
-  pCharacteristic = pService->createCharacteristic(CHARACTERISTIC_UUID,
-                      BLECharacteristic::PROPERTY_READ   |
-                      BLECharacteristic::PROPERTY_WRITE  |
-                      BLECharacteristic::PROPERTY_NOTIFY | 
-                      BLECharacteristic::PROPERTY_INDICATE);
+  pCharacteristic = pService->createCharacteristic(CHARACTERISTIC_UUID,BLECharacteristic::PROPERTY_READ);
   pCharacteristic->addDescriptor(new BLE2902());
+  pChar1 = pService->createCharacteristic(CHAR1_UUID,
+    BLECharacteristic::PROPERTY_READ | 
+    BLECharacteristic::PROPERTY_NOTIFY | 
+    BLECharacteristic::PROPERTY_INDICATE);
+  pChar1->addDescriptor(new BLE2902());
+  pChar2 = pService->createCharacteristic(CHAR2_UUID,
+    BLECharacteristic::PROPERTY_READ | 
+    BLECharacteristic::PROPERTY_NOTIFY | 
+    BLECharacteristic::PROPERTY_INDICATE);
+  pChar2->addDescriptor(new BLE2902());
   frameBuffer[34] = ver;
-  pCharacteristic->setValue(frameBuffer,35);
   pService->start();
   pAdvertising = BLEDevice::getAdvertising();
   pAdvertising->addServiceUUID(SERVICE_UUID);
@@ -225,41 +238,40 @@ void setup()
   //pAdvertising->setMinPreferred(0x06);  // functions that help with iPhone connections issue
   //pAdvertising->setMinPreferred(0x12);
   BLEDevice::startAdvertising();
-  esp_task_wdt_init(WDT_TIMEOUT, true); //enable panic so ESP32 restarts
-  esp_task_wdt_add(NULL); //add current thread to WDT watch
 }
 
 void loop()
 {
-  if(deviceConnected) 
-  {
-    if(ECUdataFlag == false)
-    {
-      long timerNow = millis();
-      if (timerNow - timerLast > 1000)          
-      {
-        timerLast = timerNow;
-        testCount++;
-        if(testCount > 127) testCount = 0;
-        frameBuffer[32] = testCount;  
-        pCharacteristic->setValue(frameBuffer,35);
-      }
-    }  
-  }
-
   if (!deviceConnected && oldDeviceConnected) 
   {
-    esp_task_wdt_reset(); //feed the watchdog
-    delay(1000); // give the bluetooth stack the chance to get things ready
+    delay(500); // give the bluetooth stack the chance to get things ready
     pServer->startAdvertising(); // restart advertising
     oldDeviceConnected = deviceConnected;
   }
   if (deviceConnected && !oldDeviceConnected) 
   {
-    // do stuff here on connecting
+    ECUdataFlag = false;
+    timerLast = millis();
     oldDeviceConnected = deviceConnected;
   }
-  esp_task_wdt_reset(); //feed the watchdog
-  ManageSerialReceive();
-  delay(30);
+
+  if(deviceConnected) 
+  {
+    if(ECUdataFlag == false)
+    {
+      long timerNow = millis();
+      if (timerNow - timerLast > 250)          
+      {
+        timerLast = timerNow;
+        testCount++;
+        if(testCount > 127) testCount = 0;
+        frameBuffer[4] = testCount;
+        frameBuffer[24] = testCount;
+        frameBuffer[32] = testCount;  
+        NotifyData();
+      }
+    }  
+  }
+  ManageSerialReceive();  
+  delay(50);
 }
